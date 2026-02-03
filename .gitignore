@@ -36,8 +36,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Drizzle
-/drizzle
+# Drizzle (keep migration files, ignore only generated meta cache if needed)
+# /drizzle
 
 # IDE
 .idea

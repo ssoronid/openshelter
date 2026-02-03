@@ -8,8 +8,11 @@ config()
 
 const runMigrate = async () => {
   const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL
+  
   if (!connectionString) {
-    throw new Error('POSTGRES_URL or DATABASE_URL is not defined')
+    console.log('⚠️  No database connection string found, skipping migrations')
+    console.log('   Set POSTGRES_URL or DATABASE_URL to run migrations')
+    process.exit(0)
   }
 
   const connection = postgres(connectionString, { max: 1 })
@@ -35,4 +38,3 @@ runMigrate().catch((err) => {
   console.error(err)
   process.exit(1)
 })
-
