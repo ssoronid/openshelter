@@ -1,14 +1,12 @@
-import { NextAuthConfig } from 'next-auth'
+import type { NextAuthConfig } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import Google from 'next-auth/providers/google'
-import GitHub from 'next-auth/providers/github'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from '@/lib/db'
 import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 
-export const authConfig = {
+export const authConfig: NextAuthConfig = {
   adapter: DrizzleAdapter(db),
   providers: [
     Credentials({
@@ -22,20 +20,20 @@ export const authConfig = {
           return null
         }
 
+        const email = credentials.email as string
+        const password = credentials.password as string
+
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.email, credentials.email as string))
+          .where(eq(users.email, email))
           .limit(1)
 
         if (!user || !user.password) {
           return null
         }
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        )
+        const isValid = await bcrypt.compare(password, user.password)
 
         if (!isValid) {
           return null
@@ -49,22 +47,6 @@ export const authConfig = {
         }
       },
     }),
-    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-      ? [
-          Google({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-          }),
-        ]
-      : []),
-    ...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
-      ? [
-          GitHub({
-            clientId: process.env.GITHUB_CLIENT_ID,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET,
-          }),
-        ]
-      : []),
   ],
   pages: {
     signIn: '/signin',
@@ -80,11 +62,11 @@ export const authConfig = {
       return token
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (session.user && token.id) {
         session.user.id = token.id as string
       }
       return session
     },
   },
-} satisfies NextAuthConfig
-
+  trustHost: true,
+}

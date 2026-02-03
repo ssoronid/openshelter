@@ -15,3 +15,4 @@ export const shelters = pgTable('shelters', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+

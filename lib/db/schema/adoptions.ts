@@ -30,3 +30,4 @@ export const adoptionApplications = pgTable('adoption_applications', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+

@@ -20,3 +20,4 @@ export const userRoles = pgTable('user_roles', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+

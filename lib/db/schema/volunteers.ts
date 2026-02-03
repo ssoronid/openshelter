@@ -42,3 +42,4 @@ export const taskAssignments = pgTable('task_assignments', {
   assignedAt: timestamp('assigned_at').defaultNow().notNull(),
 })
 
+

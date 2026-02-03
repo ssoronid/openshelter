@@ -53,3 +53,4 @@ export const treatments = pgTable('treatments', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+
