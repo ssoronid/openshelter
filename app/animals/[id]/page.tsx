@@ -1,19 +1,10 @@
 import { db } from '@/lib/db'
-import { animals, shelters } from '@/lib/db/schema'
+import { animals, shelters, animalPhotos } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
-import { PawPrint, Camera } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 import AdoptionForm from '@/components/adoptions/AdoptionForm'
+import PhotoGallery from '@/components/animals/PhotoGallery'
+import Link from 'next/link'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -41,6 +32,13 @@ export default async function PublicAnimalPage({ params }: Props) {
     notFound()
   }
 
+  // Get photos
+  const photos = await db
+    .select()
+    .from(animalPhotos)
+    .where(eq(animalPhotos.animalId, id))
+    .orderBy(animalPhotos.isPrimary)
+
   const speciesLabels: Record<string, string> = {
     dog: 'Perro',
     cat: 'Gato',
@@ -48,84 +46,81 @@ export default async function PublicAnimalPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <div className="rounded-full bg-primary p-1.5">
-              <PawPrint className="h-4 w-4 text-primary-foreground" />
-            </div>
-            OpenShelter
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <Link href="/" className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            🐾 OpenShelter
+          </Link>
+          <Link
+            href="/animals"
+            className="text-sm text-gray-600 hover:text-gray-900"
+          >
+            Ver todos los animales
           </Link>
         </div>
       </header>
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Animal Card */}
-          <Card className="overflow-hidden">
-            <div className="md:flex">
-              {/* Image Placeholder */}
-              <div className="md:w-1/2 bg-muted h-64 md:h-auto flex flex-col items-center justify-center gap-3">
-                <Camera className="h-12 w-12 text-muted-foreground/50" />
-                <span className="text-muted-foreground text-sm">
-                  Foto del animal
-                </span>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Photo Gallery */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <PhotoGallery
+                photos={photos.map((p) => ({
+                  id: p.id,
+                  url: p.url,
+                  isPrimary: p.isPrimary || false,
+                }))}
+                animalName={animal.name}
+              />
+            </div>
+
+            {/* Animal Info */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">{animal.name}</h1>
+                <div className="space-y-3 mb-6">
+                  <p className="text-gray-700">
+                    <span className="font-medium">Especie:</span>{' '}
+                    {speciesLabels[animal.species] || animal.species}
+                  </p>
+                  {animal.breed && (
+                    <p className="text-gray-700">
+                      <span className="font-medium">Raza:</span> {animal.breed}
+                    </p>
+                  )}
+                  {animal.age && (
+                    <p className="text-gray-700">
+                      <span className="font-medium">Edad:</span>{' '}
+                      {animal.age < 12
+                        ? `${animal.age} meses`
+                        : `${Math.floor(animal.age / 12)} año${Math.floor(animal.age / 12) > 1 ? 's' : ''}`}
+                    </p>
+                  )}
+                  {animal.shelterName && (
+                    <p className="text-gray-700">
+                      <span className="font-medium">Refugio:</span> {animal.shelterName}
+                    </p>
+                  )}
+                </div>
+                {animal.description && (
+                  <div>
+                    <h2 className="font-bold text-gray-900 mb-2">Sobre {animal.name}</h2>
+                    <p className="text-gray-700 whitespace-pre-wrap">{animal.description}</p>
+                  </div>
+                )}
               </div>
 
-              {/* Info */}
-              <div className="md:w-1/2">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-3xl">{animal.name}</CardTitle>
-                      <CardDescription className="text-base">
-                        {speciesLabels[animal.species] || animal.species}
-                        {animal.breed && ` · ${animal.breed}`}
-                      </CardDescription>
-                    </div>
-                    <Badge variant="default">Disponible</Badge>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    {animal.age && (
-                      <div>
-                        <p className="text-muted-foreground">Edad</p>
-                        <p className="font-medium">{animal.age} meses</p>
-                      </div>
-                    )}
-                    {animal.shelterName && (
-                      <div>
-                        <p className="text-muted-foreground">Refugio</p>
-                        <p className="font-medium">{animal.shelterName}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {animal.description && (
-                    <>
-                      <Separator />
-                      <div>
-                        <p className="text-sm font-medium mb-2">
-                          Sobre {animal.name}
-                        </p>
-                        <p className="text-muted-foreground text-sm">
-                          {animal.description}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
+              {/* Adoption Form */}
+              <div className="bg-white rounded-xl shadow-lg p-8">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Solicitar Adopción</h2>
+                <AdoptionForm animalId={animal.id} />
               </div>
             </div>
-          </Card>
-
-          {/* Adoption Form */}
-          <AdoptionForm animalId={animal.id} />
+          </div>
         </div>
       </div>
     </div>
