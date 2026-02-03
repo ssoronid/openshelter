@@ -214,3 +214,4 @@ Para más ayuda, consulta:
 - [Documentación de desarrollo](DEVELOPMENT.md)
 - [Issues en GitHub](https://github.com/tu-usuario/openshelter/issues)
 
+

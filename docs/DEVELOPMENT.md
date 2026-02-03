@@ -310,3 +310,4 @@ Usa `console.log` para desarrollo, pero considera usar un logger en producción.
 - [NextAuth.js Docs](https://next-auth.js.org/)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 
+
