@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
+// Force dynamic rendering - page needs database access
+export const dynamic = 'force-dynamic'
+
 async function getStats() {
   const [userCount] = await db
     .select({ count: sql<number>`count(*)::int` })
