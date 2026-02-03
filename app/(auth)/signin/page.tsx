@@ -3,6 +3,19 @@
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Loader2, PawPrint } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function SignInPage() {
   const router = useRouter()
@@ -37,77 +50,76 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-lg">
-        <div>
-          <h1 className="text-center text-3xl font-bold text-gray-900">
-            🐾 OpenShelter
-          </h1>
-          <h2 className="mt-4 text-center text-xl font-semibold text-gray-700">
-            Iniciar Sesión
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-500">
-            Ingresa tus credenciales para acceder
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-              <p className="text-sm text-red-700">{error}</p>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex justify-center mb-2">
+            <div className="rounded-full bg-primary p-3">
+              <PawPrint className="h-6 w-6 text-primary-foreground" />
             </div>
-          )}
+          </div>
+          <CardTitle className="text-2xl font-bold">OpenShelter</CardTitle>
+          <CardDescription>
+            Ingresa tus credenciales para acceder al sistema
+          </CardDescription>
+        </CardHeader>
 
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
                 id="email"
-                name="email"
                 type="email"
+                placeholder="usuario@example.com"
                 autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="usuario@example.com"
+                disabled={loading}
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Contraseña
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input
                 id="password"
-                name="password"
                 type="password"
+                placeholder="••••••••"
                 autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="••••••••"
+                disabled={loading}
               />
             </div>
-          </div>
+          </CardContent>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-blue-600 py-3 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-          </button>
+          <CardFooter className="flex flex-col gap-4">
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Iniciando sesión...
+                </>
+              ) : (
+                'Iniciar Sesión'
+              )}
+            </Button>
 
-          <div className="text-center text-sm text-gray-500 bg-gray-50 rounded-lg p-4">
-            <p className="font-medium">Usuario de prueba:</p>
-            <p>admin@example.com / admin123</p>
-          </div>
+            <div className="w-full rounded-lg bg-muted p-3 text-center text-sm">
+              <p className="font-medium text-muted-foreground">Usuario de prueba:</p>
+              <p className="text-muted-foreground">admin@example.com / admin123</p>
+            </div>
+          </CardFooter>
         </form>
-      </div>
+      </Card>
     </div>
   )
 }

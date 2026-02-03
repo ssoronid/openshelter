@@ -1,6 +1,8 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { PlusCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import AnimalList from '@/components/animals/AnimalList'
 
 export default async function AnimalsPage() {
@@ -11,16 +13,22 @@ export default async function AnimalsPage() {
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Animales</h1>
-        <Link
-          href="/dashboard/animals/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          ➕ Nuevo Animal
-        </Link>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Animales</h1>
+          <p className="text-muted-foreground">
+            Gestiona los animales de tus refugios
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/dashboard/animals/new">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Nuevo Animal
+          </Link>
+        </Button>
       </div>
+
       <AnimalList />
     </div>
   )

@@ -1,6 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Loader2, Check, X } from 'lucide-react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 interface AdoptionApplication {
   id: string
@@ -42,7 +61,12 @@ export default function AdoptionList() {
   }
 
   const handleReview = async (id: string, status: 'approved' | 'rejected') => {
-    if (!confirm(`¿Estás seguro de ${status === 'approved' ? 'aprobar' : 'rechazar'} esta solicitud?`)) return
+    if (
+      !confirm(
+        `¿Estás seguro de ${status === 'approved' ? 'aprobar' : 'rechazar'} esta solicitud?`
+      )
+    )
+      return
 
     try {
       const response = await fetch(`/api/adoptions/${id}/approve`, {
@@ -65,94 +89,116 @@ export default function AdoptionList() {
     rejected: 'Rechazada',
   }
 
-  const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    approved: 'bg-green-100 text-green-800',
-    rejected: 'bg-red-100 text-red-800',
+  const statusVariants: Record<
+    string,
+    'default' | 'secondary' | 'destructive' | 'outline'
+  > = {
+    pending: 'outline',
+    approved: 'default',
+    rejected: 'destructive',
   }
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <div className="text-gray-500">Cargando solicitudes...</div>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">
+          Cargando solicitudes...
+        </span>
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* Filter */}
-      <div className="mb-6">
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      <div>
+        <Select
+          value={filter || 'all'}
+          onValueChange={(value) => setFilter(value === 'all' ? '' : value)}
         >
-          <option value="">Todas las solicitudes</option>
-          <option value="pending">Pendientes</option>
-          <option value="approved">Aprobadas</option>
-          <option value="rejected">Rechazadas</option>
-        </select>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Todas las solicitudes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas las solicitudes</SelectItem>
+            <SelectItem value="pending">Pendientes</SelectItem>
+            <SelectItem value="approved">Aprobadas</SelectItem>
+            <SelectItem value="rejected">Rechazadas</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
       {applications.length === 0 ? (
-        <div className="text-center py-12 text-gray-500 bg-white rounded-xl border border-gray-200">
-          No se encontraron solicitudes
-        </div>
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            No se encontraron solicitudes
+          </CardContent>
+        </Card>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-xl border border-gray-200">
-          <table className="min-w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Animal</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Solicitante</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Contacto</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Estado</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Fecha</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Animal</TableHead>
+                <TableHead>Solicitante</TableHead>
+                <TableHead>Contacto</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {applications.map((app) => (
-                <tr key={app.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{app.animalName || app.animalId}</td>
-                  <td className="px-6 py-4 text-gray-700">{app.applicantName}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="text-gray-700">{app.applicantEmail}</div>
-                    <div className="text-gray-500">{app.applicantPhone}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${statusColors[app.status] || 'bg-gray-100'}`}>
+                <TableRow key={app.id}>
+                  <TableCell className="font-medium">
+                    {app.animalName || app.animalId}
+                  </TableCell>
+                  <TableCell>{app.applicantName}</TableCell>
+                  <TableCell>
+                    <div className="text-sm">{app.applicantEmail}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {app.applicantPhone}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={statusVariants[app.status] || 'outline'}>
                       {statusLabels[app.status] || app.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
                     {new Date(app.createdAt).toLocaleDateString('es-ES')}
-                  </td>
-                  <td className="px-6 py-4">
+                  </TableCell>
+                  <TableCell className="text-right">
                     {app.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <button
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => handleReview(app.id, 'approved')}
-                          className="text-green-600 hover:text-green-800 font-medium"
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
                         >
+                          <Check className="mr-1 h-4 w-4" />
                           Aprobar
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={() => handleReview(app.id, 'rejected')}
-                          className="text-red-600 hover:text-red-800 font-medium"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
+                          <X className="mr-1 h-4 w-4" />
                           Rechazar
-                        </button>
+                        </Button>
                       </div>
                     )}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </Card>
       )}
     </div>
   )

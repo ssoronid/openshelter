@@ -2,8 +2,18 @@ import { db } from '@/lib/db'
 import { animals, shelters } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { notFound } from 'next/navigation'
-import AdoptionForm from '@/components/adoptions/AdoptionForm'
 import Link from 'next/link'
+import { PawPrint, Camera } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import AdoptionForm from '@/components/adoptions/AdoptionForm'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -38,61 +48,84 @@ export default async function PublicAnimalPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-xl font-bold text-gray-900">
-            🐾 OpenShelter
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 font-semibold">
+            <div className="rounded-full bg-primary p-1.5">
+              <PawPrint className="h-4 w-4 text-primary-foreground" />
+            </div>
+            OpenShelter
           </Link>
         </div>
       </header>
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Animal Card */}
+          <Card className="overflow-hidden">
             <div className="md:flex">
-              <div className="md:w-1/2 bg-gray-200 h-64 md:h-auto flex items-center justify-center">
-                <span className="text-gray-400 text-lg">📷 Foto del animal</span>
+              {/* Image Placeholder */}
+              <div className="md:w-1/2 bg-muted h-64 md:h-auto flex flex-col items-center justify-center gap-3">
+                <Camera className="h-12 w-12 text-muted-foreground/50" />
+                <span className="text-muted-foreground text-sm">
+                  Foto del animal
+                </span>
               </div>
-              <div className="md:w-1/2 p-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">{animal.name}</h1>
-                <div className="space-y-3 mb-6">
-                  <p className="text-gray-700">
-                    <span className="font-medium">Especie:</span>{' '}
-                    {speciesLabels[animal.species] || animal.species}
-                  </p>
-                  {animal.breed && (
-                    <p className="text-gray-700">
-                      <span className="font-medium">Raza:</span> {animal.breed}
-                    </p>
-                  )}
-                  {animal.age && (
-                    <p className="text-gray-700">
-                      <span className="font-medium">Edad:</span> {animal.age} meses
-                    </p>
-                  )}
-                  {animal.shelterName && (
-                    <p className="text-gray-700">
-                      <span className="font-medium">Refugio:</span> {animal.shelterName}
-                    </p>
-                  )}
-                </div>
-                {animal.description && (
-                  <div className="mb-6">
-                    <h2 className="font-bold text-gray-900 mb-2">Sobre {animal.name}</h2>
-                    <p className="text-gray-700">{animal.description}</p>
+
+              {/* Info */}
+              <div className="md:w-1/2">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="text-3xl">{animal.name}</CardTitle>
+                      <CardDescription className="text-base">
+                        {speciesLabels[animal.species] || animal.species}
+                        {animal.breed && ` · ${animal.breed}`}
+                      </CardDescription>
+                    </div>
+                    <Badge variant="default">Disponible</Badge>
                   </div>
-                )}
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    {animal.age && (
+                      <div>
+                        <p className="text-muted-foreground">Edad</p>
+                        <p className="font-medium">{animal.age} meses</p>
+                      </div>
+                    )}
+                    {animal.shelterName && (
+                      <div>
+                        <p className="text-muted-foreground">Refugio</p>
+                        <p className="font-medium">{animal.shelterName}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {animal.description && (
+                    <>
+                      <Separator />
+                      <div>
+                        <p className="text-sm font-medium mb-2">
+                          Sobre {animal.name}
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                          {animal.description}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
               </div>
             </div>
-          </div>
+          </Card>
 
-          <div className="mt-8 bg-white rounded-xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Solicitar Adopción</h2>
-            <AdoptionForm animalId={animal.id} />
-          </div>
+          {/* Adoption Form */}
+          <AdoptionForm animalId={animal.id} />
         </div>
       </div>
     </div>

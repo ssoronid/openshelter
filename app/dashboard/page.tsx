@@ -4,6 +4,15 @@ import { db } from '@/lib/db'
 import { animals, userRoles } from '@/lib/db/schema'
 import { eq, and, inArray, sql } from 'drizzle-orm'
 import Link from 'next/link'
+import { PlusCircle, List, Dog, CheckCircle, Home } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -61,55 +70,85 @@ export default async function DashboardPage() {
     console.error('Error fetching dashboard stats:', error)
   }
 
+  const stats = [
+    {
+      title: 'Total Animales',
+      value: totalAnimals,
+      icon: Dog,
+      description: 'Animales registrados',
+    },
+    {
+      title: 'Disponibles',
+      value: availableAnimals,
+      icon: CheckCircle,
+      description: 'Listos para adopción',
+      valueClass: 'text-green-600',
+    },
+    {
+      title: 'Adoptados',
+      value: adoptedAnimals,
+      icon: CheckCircle,
+      description: 'Encontraron un hogar',
+      valueClass: 'text-blue-600',
+    },
+    {
+      title: 'Refugios',
+      value: totalShelters,
+      icon: Home,
+      description: 'Refugios asociados',
+    },
+  ]
+
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Bienvenido de vuelta, {session.user?.name || 'Usuario'}
+        </p>
+      </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-          <h2 className="text-sm font-medium text-gray-500 mb-2">
-            Total Animales
-          </h2>
-          <p className="text-3xl font-bold text-gray-900">{totalAnimals}</p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-          <h2 className="text-sm font-medium text-gray-500 mb-2">
-            Disponibles
-          </h2>
-          <p className="text-3xl font-bold text-green-600">{availableAnimals}</p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-          <h2 className="text-sm font-medium text-gray-500 mb-2">Adoptados</h2>
-          <p className="text-3xl font-bold text-blue-600">{adoptedAnimals}</p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-          <h2 className="text-sm font-medium text-gray-500 mb-2">Refugios</h2>
-          <p className="text-3xl font-bold text-gray-900">{totalShelters}</p>
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Card key={stat.title}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${stat.valueClass || ''}`}>
+                {stat.value}
+              </div>
+              <p className="text-xs text-muted-foreground">{stat.description}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h2>
-        <div className="flex gap-4">
-          <Link
-            href="/dashboard/animals/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            ➕ Nuevo Animal
-          </Link>
-          <Link
-            href="/dashboard/animals"
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            📋 Ver Todos los Animales
-          </Link>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Acciones Rápidas</CardTitle>
+          <CardDescription>
+            Operaciones frecuentes para gestionar tu refugio
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-4">
+          <Button asChild>
+            <Link href="/dashboard/animals/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Nuevo Animal
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/animals">
+              <List className="mr-2 h-4 w-4" />
+              Ver Todos los Animales
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }
