@@ -6,14 +6,14 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth
 
   // Allow all public routes
-  const publicRoutes = ['/', '/signin', '/api/auth', '/animals']
+  const publicRoutes = ['/', '/signin', '/setup', '/api/auth', '/animals']
   const isPublicRoute = publicRoutes.some(route => 
     pathname === route || pathname.startsWith(`${route}/`)
   )
 
   // API routes
   if (pathname.startsWith('/api')) {
-    const publicApiRoutes = ['/api/auth', '/api/adoptions']
+    const publicApiRoutes = ['/api/auth', '/api/adoptions', '/api/setup', '/api/public']
     const isPublicApi = publicApiRoutes.some(route => pathname.startsWith(route))
     
     if (isPublicApi) {
