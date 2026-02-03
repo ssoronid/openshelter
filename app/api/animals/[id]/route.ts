@@ -18,9 +18,10 @@ const updateAnimalSchema = z.object({
 // GET /api/animals/[id] - Get single animal
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -29,7 +30,7 @@ export async function GET(
     const [animal] = await db
       .select()
       .from(animals)
-      .where(eq(animals.id, params.id))
+      .where(eq(animals.id, id))
       .limit(1)
 
     if (!animal) {
@@ -68,9 +69,10 @@ export async function GET(
 // PATCH /api/animals/[id] - Update animal
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -83,7 +85,7 @@ export async function PATCH(
     const [animal] = await db
       .select()
       .from(animals)
-      .where(eq(animals.id, params.id))
+      .where(eq(animals.id, id))
       .limit(1)
 
     if (!animal) {
@@ -115,7 +117,7 @@ export async function PATCH(
         ...validated,
         updatedAt: new Date(),
       })
-      .where(eq(animals.id, params.id))
+      .where(eq(animals.id, id))
       .returning()
 
     return NextResponse.json({ data: updatedAnimal })
@@ -138,9 +140,10 @@ export async function PATCH(
 // DELETE /api/animals/[id] - Delete animal
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -150,7 +153,7 @@ export async function DELETE(
     const [animal] = await db
       .select()
       .from(animals)
-      .where(eq(animals.id, params.id))
+      .where(eq(animals.id, id))
       .limit(1)
 
     if (!animal) {
@@ -176,7 +179,7 @@ export async function DELETE(
       )
     }
 
-    await db.delete(animals).where(eq(animals.id, params.id))
+    await db.delete(animals).where(eq(animals.id, id))
 
     return NextResponse.json({ message: 'Animal eliminado correctamente' })
   } catch (error) {

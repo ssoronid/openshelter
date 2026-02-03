@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { animals, animalPhotos } from '@/lib/db/schema'
 import { shelters, userRoles } from '@/lib/db/schema'
-import { eq, and, or, like, desc } from 'drizzle-orm'
+import { eq, and, or, like, desc, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 
 const createAnimalSchema = z.object({
@@ -35,10 +35,29 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = (page - 1) * limit
 
+    // Get user's accessible shelters
+    const userShelters = await db
+      .select({ shelterId: userRoles.shelterId })
+      .from(userRoles)
+      .where(eq(userRoles.userId, session.user.id))
+
+    const accessibleShelterIds = userShelters.map((s) => s.shelterId)
+
+    if (accessibleShelterIds.length === 0) {
+      return NextResponse.json({ data: [], pagination: { page, limit, total: 0, totalPages: 0 } })
+    }
+
     // Build where conditions
-    const conditions = []
+    const conditions = [inArray(animals.shelterId, accessibleShelterIds)]
 
     if (shelterId) {
+      // Verify user has access to the requested shelter
+      if (!accessibleShelterIds.includes(shelterId)) {
+        return NextResponse.json(
+          { error: 'No tienes acceso a este refugio' },
+          { status: 403 }
+        )
+      }
       conditions.push(eq(animals.shelterId, shelterId))
     }
 
@@ -84,7 +103,7 @@ export async function GET(request: NextRequest) {
       .offset(offset)
 
     const totalCountResult = await db
-      .select({ count: animals.id })
+      .select()
       .from(animals)
       .where(whereClause)
 

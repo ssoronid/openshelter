@@ -3,10 +3,11 @@ import { redirect } from 'next/navigation'
 import AnimalForm from '@/components/animals/AnimalForm'
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function EditAnimalPage({ params }: Props) {
+  const { id } = await params
   const session = await auth()
 
   if (!session) {
@@ -16,7 +17,7 @@ export default async function EditAnimalPage({ params }: Props) {
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Editar Animal</h1>
-      <AnimalForm animalId={params.id} />
+      <AnimalForm animalId={id} />
     </div>
   )
 }

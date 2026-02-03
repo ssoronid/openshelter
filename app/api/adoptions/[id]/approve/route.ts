@@ -13,9 +13,10 @@ const reviewSchema = z.object({
 // PATCH /api/adoptions/[id]/approve - Approve or reject application
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -28,7 +29,7 @@ export async function PATCH(
     const [application] = await db
       .select()
       .from(adoptionApplications)
-      .where(eq(adoptionApplications.id, params.id))
+      .where(eq(adoptionApplications.id, id))
       .limit(1)
 
     if (!application) {
@@ -81,7 +82,7 @@ export async function PATCH(
         reviewedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(adoptionApplications.id, params.id))
+      .where(eq(adoptionApplications.id, id))
       .returning()
 
     // If approved, update animal status

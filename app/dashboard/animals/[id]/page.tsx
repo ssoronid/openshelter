@@ -6,10 +6,11 @@ import { eq } from 'drizzle-orm'
 import Link from 'next/link'
 
 interface Props {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function AnimalDetailPage({ params }: Props) {
+  const { id } = await params
   const session = await auth()
 
   if (!session) {
@@ -32,7 +33,7 @@ export default async function AnimalDetailPage({ params }: Props) {
     })
     .from(animals)
     .leftJoin(shelters, eq(animals.shelterId, shelters.id))
-    .where(eq(animals.id, params.id))
+    .where(eq(animals.id, id))
     .limit(1)
 
   if (!animal) {
