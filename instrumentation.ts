@@ -1,4 +1,4 @@
 export async function register() {
-  // Instrumentation hook for Next.js
-  // Database migrations are handled during build by lib/db/migrate.ts
+  // Database migrations should be run manually after first deploy:
+  // npx vercel env pull .env.local && npm run db:push
 }
