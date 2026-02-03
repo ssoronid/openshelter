@@ -11,7 +11,7 @@ function waitForPostgres(maxAttempts = 30) {
   
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      execSync('docker exec openshelter-db-dev pg_isready -U openshelter', {
+      execSync('docker exec openshelter-db-dev pg_isready -U openshelter -p 5432', {
         stdio: 'ignore'
       })
       console.log('✅ PostgreSQL está listo!')

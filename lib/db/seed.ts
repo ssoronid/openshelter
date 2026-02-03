@@ -3,6 +3,10 @@
  * Run with: npm run db:seed
  */
 
+import * as dotenv from 'dotenv'
+dotenv.config({ path: '.env.local' })
+dotenv.config()
+
 import { db } from './index'
 import { users, shelters, animals, userRoles } from './schema'
 import { createId } from '@paralleldrive/cuid2'

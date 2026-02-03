@@ -14,7 +14,7 @@ const envExamplePath = path.join(process.cwd(), '.env.example')
 
 // Valores por defecto para desarrollo
 const defaultEnv = {
-  DATABASE_URL: 'postgresql://openshelter:openshelter@localhost:5432/openshelter',
+  DATABASE_URL: 'postgresql://openshelter:openshelter@localhost:5433/openshelter',
   NEXTAUTH_SECRET: crypto.randomBytes(32).toString('base64'),
   NEXTAUTH_URL: 'http://localhost:3000',
   NODE_ENV: 'development'

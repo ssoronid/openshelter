@@ -6,7 +6,7 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth
 
   // Public routes
-  const publicRoutes = ['/auth/signin', '/auth/signup', '/api/auth']
+  const publicRoutes = ['/signin', '/auth/signin', '/auth/signup', '/api/auth']
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   // API routes - allow public access to certain endpoints
@@ -30,7 +30,7 @@ export default auth((req) => {
 
   // Protect dashboard routes
   if (pathname.startsWith('/dashboard') && !isLoggedIn) {
-    return NextResponse.redirect(new URL('/auth/signin', req.url))
+    return NextResponse.redirect(new URL('/signin', req.url))
   }
 
   // Redirect logged-in users away from auth pages
