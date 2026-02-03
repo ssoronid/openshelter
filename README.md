@@ -2,7 +2,7 @@
 
 Sistema open-source para gestión de refugios de animales en Latinoamérica. Diseñado para ser self-hosted o desplegado en Vercel.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ssoronid/openshelter)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ssoronid/openshelter&stores=[{"type":"postgres"},{"type":"blob"}])
 
 ## 🚀 Inicio Rápido (Desarrollo)
 
