@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: openshelter-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-openshelter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-openshelter}
+      POSTGRES_DB: ${POSTGRES_DB:-openshelter}
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-openshelter}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - openshelter-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openshelter-app
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-openshelter}:${POSTGRES_PASSWORD:-openshelter}@postgres:5432/${POSTGRES_DB:-openshelter}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - openshelter-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  openshelter-network:
+    driver: bridge
+
