@@ -18,7 +18,7 @@
     "dev:db": "docker-compose -f docker-compose.dev.yml up -d",
     "dev:db:down": "docker-compose -f docker-compose.dev.yml down",
     "dev:db:logs": "docker-compose -f docker-compose.dev.yml logs -f postgres",
-    "dev:up": "npm run dev:setup && npm run dev:db && sleep 3 && npm run db:push && npm run dev",
+    "dev:up": "npm run dev:setup && npm run dev:db && node scripts/wait-db.js && npm run db:push && npm run dev",
     "dev:reset": "npm run dev:db:down && docker volume rm openshelter_postgres_dev_data 2>/dev/null || true && npm run dev:up"
   },
   "dependencies": {
