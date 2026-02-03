@@ -75,40 +75,21 @@ La aplicación estará disponible en [http://localhost:3000](http://localhost:30
 
 ## Self-Hosting con Docker
 
-1. Clona el repositorio y configura las variables de entorno:
+Para instalar OpenShelter en tu propio servidor, consulta la [guía de self-hosting](SELFHOST.md).
 
+**Inicio rápido:**
 ```bash
+git clone https://github.com/ssoronid/openshelter.git
+cd openshelter
 cp .env.example .env
-```
-
-Edita `.env` con tus configuraciones.
-
-2. Inicia los servicios con Docker Compose:
-
-```bash
+# Edita .env con tus configuraciones
 docker-compose up -d
-```
-
-3. Genera y ejecuta las migraciones:
-
-```bash
-docker-compose exec app npm run db:generate
 docker-compose exec app npm run db:push
 ```
 
-4. La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
+La aplicación estará disponible en `http://tu-servidor:3000`
 
-Para detener los servicios:
-
-```bash
-docker-compose down
-```
-
-Para detener y eliminar los volúmenes (⚠️ esto elimina la base de datos):
-
-```bash
-docker-compose down -v
-```
+Para más detalles, configuración avanzada y troubleshooting, ve a [SELFHOST.md](SELFHOST.md).
 
 ## Deployment en Vercel
 
