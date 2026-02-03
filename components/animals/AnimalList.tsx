@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 interface Animal {
   id: string
@@ -9,47 +10,29 @@ interface Animal {
   breed?: string
   age?: number
   status: string
-  description?: string
-  shelterName?: string
-  createdAt: string
 }
 
-interface AnimalListProps {
-  initialAnimals?: Animal[]
-}
-
-export default function AnimalList({ initialAnimals = [] }: AnimalListProps) {
-  const [animals, setAnimals] = useState<Animal[]>(initialAnimals)
+export default function AnimalList() {
+  const [animals, setAnimals] = useState<Animal[]>([])
   const [loading, setLoading] = useState(true)
-  const [filters, setFilters] = useState({
-    status: '',
-    species: '',
-    search: '',
-  })
-  const [page, setPage] = useState(1)
+  const [filter, setFilter] = useState({ status: '', species: '' })
 
   useEffect(() => {
     fetchAnimals()
-  }, [filters, page])
+  }, [filter])
 
   const fetchAnimals = async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '20',
-        ...(filters.status && { status: filters.status }),
-        ...(filters.species && { species: filters.species }),
-        ...(filters.search && { search: filters.search }),
-      })
+      const params = new URLSearchParams()
+      if (filter.status) params.append('status', filter.status)
+      if (filter.species) params.append('species', filter.species)
 
       const response = await fetch(`/api/animals?${params}`)
       const data = await response.json()
 
       if (response.ok) {
-        setAnimals(data.data)
-      } else {
-        console.error('Error fetching animals:', data.error)
+        setAnimals(data.data || [])
       }
     } catch (error) {
       console.error('Error fetching animals:', error)
@@ -59,66 +42,64 @@ export default function AnimalList({ initialAnimals = [] }: AnimalListProps) {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este animal?')) {
-      return
-    }
+    if (!confirm('¿Estás seguro de eliminar este animal?')) return
 
     try {
-      const response = await fetch(`/api/animals/${id}`, {
-        method: 'DELETE',
-      })
-
+      const response = await fetch(`/api/animals/${id}`, { method: 'DELETE' })
       if (response.ok) {
-        setAnimals(animals.filter((animal) => animal.id !== id))
-      } else {
-        const data = await response.json()
-        alert(data.error || 'Error al eliminar animal')
+        setAnimals(animals.filter((a) => a.id !== id))
       }
     } catch (error) {
       console.error('Error deleting animal:', error)
-      alert('Error al eliminar animal')
     }
   }
 
-  if (loading && animals.length === 0) {
-    return <div className="text-center py-8">Cargando animales...</div>
+  const statusLabels: Record<string, string> = {
+    available: 'Disponible',
+    adopted: 'Adoptado',
+    in_treatment: 'En tratamiento',
+    deceased: 'Fallecido',
+  }
+
+  const speciesLabels: Record<string, string> = {
+    dog: 'Perro',
+    cat: 'Gato',
+    other: 'Otro',
+  }
+
+  const statusColors: Record<string, string> = {
+    available: 'bg-green-100 text-green-800',
+    adopted: 'bg-blue-100 text-blue-800',
+    in_treatment: 'bg-yellow-100 text-yellow-800',
+    deceased: 'bg-gray-100 text-gray-800',
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="text-gray-500">Cargando animales...</div>
+      </div>
+    )
   }
 
   return (
     <div>
       {/* Filters */}
       <div className="mb-6 flex gap-4 flex-wrap">
-        <input
-          type="text"
-          placeholder="Buscar..."
-          value={filters.search}
-          onChange={(e) => {
-            setFilters({ ...filters, search: e.target.value })
-            setPage(1)
-          }}
-          className="px-3 py-2 border border-gray-300 rounded-md"
-        />
         <select
-          value={filters.status}
-          onChange={(e) => {
-            setFilters({ ...filters, status: e.target.value })
-            setPage(1)
-          }}
-          className="px-3 py-2 border border-gray-300 rounded-md"
+          value={filter.status}
+          onChange={(e) => setFilter({ ...filter, status: e.target.value })}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Todos los estados</option>
           <option value="available">Disponible</option>
           <option value="adopted">Adoptado</option>
           <option value="in_treatment">En tratamiento</option>
-          <option value="deceased">Fallecido</option>
         </select>
         <select
-          value={filters.species}
-          onChange={(e) => {
-            setFilters({ ...filters, species: e.target.value })
-            setPage(1)
-          }}
-          className="px-3 py-2 border border-gray-300 rounded-md"
+          value={filter.species}
+          onChange={(e) => setFilter({ ...filter, species: e.target.value })}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Todas las especies</option>
           <option value="dog">Perro</option>
@@ -127,89 +108,48 @@ export default function AnimalList({ initialAnimals = [] }: AnimalListProps) {
         </select>
       </div>
 
-      {/* Animals Table */}
+      {/* Table */}
       {animals.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-12 text-gray-500 bg-white rounded-xl border border-gray-200">
           No se encontraron animales
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto bg-white rounded-xl border border-gray-200">
+          <table className="min-w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Nombre
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Especie
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Raza
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Edad
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Acciones
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Nombre</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Especie</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Raza</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Edad</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Estado</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {animals.map((animal) => (
-                <tr key={animal.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{animal.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {animal.species === 'dog' ? 'Perro' : animal.species === 'cat' ? 'Gato' : 'Otro'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {animal.breed || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {animal.age ? `${animal.age} meses` : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 text-xs rounded ${
-                        animal.status === 'available'
-                          ? 'bg-green-100 text-green-800'
-                          : animal.status === 'adopted'
-                          ? 'bg-blue-100 text-blue-800'
-                          : animal.status === 'in_treatment'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {animal.status === 'available'
-                        ? 'Disponible'
-                        : animal.status === 'adopted'
-                        ? 'Adoptado'
-                        : animal.status === 'in_treatment'
-                        ? 'En tratamiento'
-                        : 'Fallecido'}
+                <tr key={animal.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium text-gray-900">{animal.name}</td>
+                  <td className="px-6 py-4 text-gray-700">{speciesLabels[animal.species] || animal.species}</td>
+                  <td className="px-6 py-4 text-gray-700">{animal.breed || '-'}</td>
+                  <td className="px-6 py-4 text-gray-700">{animal.age ? `${animal.age}m` : '-'}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 text-xs rounded-full ${statusColors[animal.status] || 'bg-gray-100'}`}>
+                      {statusLabels[animal.status] || animal.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <a
-                      href={`/dashboard/animals/${animal.id}`}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      Ver
-                    </a>
-                    <a
-                      href={`/dashboard/animals/${animal.id}/edit`}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      Editar
-                    </a>
-                    <button
-                      onClick={() => handleDelete(animal.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Eliminar
-                    </button>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <Link href={`/dashboard/animals/${animal.id}`} className="text-blue-600 hover:text-blue-800">
+                        Ver
+                      </Link>
+                      <Link href={`/dashboard/animals/${animal.id}/edit`} className="text-indigo-600 hover:text-indigo-800">
+                        Editar
+                      </Link>
+                      <button onClick={() => handleDelete(animal.id)} className="text-red-600 hover:text-red-800">
+                        Eliminar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -217,26 +157,6 @@ export default function AnimalList({ initialAnimals = [] }: AnimalListProps) {
           </table>
         </div>
       )}
-
-      {/* Pagination */}
-      <div className="mt-4 flex justify-between items-center">
-        <button
-          onClick={() => setPage(Math.max(1, page - 1))}
-          disabled={page === 1}
-          className="px-4 py-2 border rounded disabled:opacity-50"
-        >
-          Anterior
-        </button>
-        <span>Página {page}</span>
-        <button
-          onClick={() => setPage(page + 1)}
-          disabled={animals.length < 20}
-          className="px-4 py-2 border rounded disabled:opacity-50"
-        >
-          Siguiente
-        </button>
-      </div>
     </div>
   )
 }
-
