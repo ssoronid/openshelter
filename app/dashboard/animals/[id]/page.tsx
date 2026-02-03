@@ -1,10 +1,10 @@
 import { auth } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { db } from '@/lib/db'
-import { animals, shelters } from '@/lib/db/schema'
+import { animals, shelters, animalPhotos } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import Link from 'next/link'
-import { ArrowLeft, Pencil } from 'lucide-react'
+import { ArrowLeft, Pencil, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import PhotoGallery from '@/components/animals/PhotoGallery'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -50,6 +51,13 @@ export default async function AnimalDetailPage({ params }: Props) {
   if (!animal) {
     notFound()
   }
+
+  // Get photos
+  const photos = await db
+    .select()
+    .from(animalPhotos)
+    .where(eq(animalPhotos.animalId, id))
+    .orderBy(animalPhotos.isPrimary)
 
   const statusLabels: Record<string, string> = {
     available: 'Disponible',
@@ -91,15 +99,46 @@ export default async function AnimalDetailPage({ params }: Props) {
             </p>
           </div>
         </div>
-        <Button asChild>
-          <Link href={`/dashboard/animals/${animal.id}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Editar
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          {animal.status === 'available' && (
+            <Button variant="outline" asChild>
+              <Link href={`/animals/${animal.id}`} target="_blank">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Ver página pública
+              </Link>
+            </Button>
+          )}
+          <Button asChild>
+            <Link href={`/dashboard/animals/${animal.id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Photos */}
+        <Card className="lg:row-span-2">
+          <CardHeader>
+            <CardTitle>Fotos</CardTitle>
+            <CardDescription>
+              {photos.length} {photos.length === 1 ? 'foto' : 'fotos'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PhotoGallery
+              photos={photos.map((p) => ({
+                id: p.id,
+                url: p.url,
+                isPrimary: p.isPrimary || false,
+              }))}
+              animalName={animal.name}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Info */}
         <Card>
           <CardHeader>
             <CardTitle>Información General</CardTitle>
@@ -148,6 +187,7 @@ export default async function AnimalDetailPage({ params }: Props) {
           </CardContent>
         </Card>
 
+        {/* Description */}
         <Card>
           <CardHeader>
             <CardTitle>Descripción</CardTitle>
@@ -156,7 +196,7 @@ export default async function AnimalDetailPage({ params }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground whitespace-pre-wrap">
               {animal.description || 'No hay descripción disponible.'}
             </p>
           </CardContent>

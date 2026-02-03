@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Camera } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,10 +21,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import PhotoUploader from './PhotoUploader'
 
 interface Shelter {
   id: string
   name: string
+}
+
+interface Photo {
+  id: string
+  url: string
+  isPrimary: boolean
 }
 
 interface Props {
@@ -35,6 +42,7 @@ export default function AnimalForm({ animalId }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [shelters, setShelters] = useState<Shelter[]>([])
+  const [photos, setPhotos] = useState<Photo[]>([])
   const [formData, setFormData] = useState({
     name: '',
     species: 'dog',
@@ -47,7 +55,10 @@ export default function AnimalForm({ animalId }: Props) {
 
   useEffect(() => {
     fetchShelters()
-    if (animalId) fetchAnimal()
+    if (animalId) {
+      fetchAnimal()
+      fetchPhotos()
+    }
   }, [animalId])
 
   const fetchShelters = async () => {
@@ -85,6 +96,24 @@ export default function AnimalForm({ animalId }: Props) {
     }
   }
 
+  const fetchPhotos = async () => {
+    try {
+      const response = await fetch(`/api/animals/${animalId}/photos`)
+      const data = await response.json()
+      if (response.ok && data.data) {
+        setPhotos(
+          data.data.map((p: any) => ({
+            id: p.id,
+            url: p.url,
+            isPrimary: p.isPrimary || false,
+          }))
+        )
+      }
+    } catch (error) {
+      console.error('Error fetching photos:', error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -105,8 +134,15 @@ export default function AnimalForm({ animalId }: Props) {
       })
 
       if (response.ok) {
-        router.push('/dashboard/animals')
-        router.refresh()
+        const data = await response.json()
+        // If creating new animal, redirect to edit page to add photos
+        if (!animalId && data.data?.id) {
+          router.push(`/dashboard/animals/${data.data.id}/edit`)
+          router.refresh()
+        } else {
+          router.push('/dashboard/animals')
+          router.refresh()
+        }
       } else {
         const data = await response.json()
         alert(data.error || 'Error al guardar animal')
@@ -139,6 +175,7 @@ export default function AnimalForm({ animalId }: Props) {
                 setFormData({ ...formData, shelterId: value })
               }
               required
+              disabled={!!animalId}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona un refugio" />
@@ -249,6 +286,37 @@ export default function AnimalForm({ animalId }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Photo uploader - only show when editing */}
+      {animalId ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              Fotos
+            </CardTitle>
+            <CardDescription>
+              Agrega fotos del animal para aumentar las posibilidades de adopción
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PhotoUploader
+              animalId={animalId}
+              photos={photos}
+              onPhotosChange={setPhotos}
+              disabled={loading}
+            />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="py-6">
+            <p className="text-sm text-muted-foreground text-center">
+              💡 Podrás agregar fotos después de guardar el animal
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex gap-4">
         <Button type="submit" disabled={loading}>
