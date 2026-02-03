@@ -1,37 +1,15 @@
 import 'server-only'
 
-import { neon } from '@neondatabase/serverless'
-import { drizzle, NeonHttpDatabase } from 'drizzle-orm/neon-http'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
 import * as schema from './schema'
 
-// Lazy initialization to avoid build-time errors when env vars are not set
-let _db: NeonHttpDatabase<typeof schema> | null = null
+const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL
 
-function getDb(): NeonHttpDatabase<typeof schema> {
-  if (_db) return _db
-  
-  // Neon integration uses POSTGRES_URL, fallback to DATABASE_URL for local dev
-  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL
-  if (!connectionString) {
-    throw new Error(
-      'Database connection string not found. ' +
-      'Expected POSTGRES_URL (Vercel/Neon) or DATABASE_URL (local dev).'
-    )
-  }
-  
-  const sql = neon(connectionString)
-  _db = drizzle(sql, { schema })
-  return _db
-}
+// For build time when no DB is available, create a null client
+// Use prepare: false for serverless compatibility with Neon pooler
+const client = connectionString
+  ? postgres(connectionString, { prepare: false })
+  : null
 
-// Export a proxy that lazily initializes the database connection
-export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
-  get(_, prop) {
-    const realDb = getDb()
-    const value = (realDb as any)[prop]
-    if (typeof value === 'function') {
-      return value.bind(realDb)
-    }
-    return value
-  },
-})
+export const db = client ? drizzle(client, { schema }) : null!
