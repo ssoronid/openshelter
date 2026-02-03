@@ -1,47 +1,52 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { Users } from 'lucide-react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { db } from '@/lib/db'
+import { shelters, userRoles } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
+import UsersPageClient from './UsersPageClient'
 
-export default async function UsersPage() {
+interface Props {
+  searchParams: Promise<{ shelterId?: string }>
+}
+
+export default async function UsersPage({ searchParams }: Props) {
   const session = await auth()
 
   if (!session) {
     redirect('/signin')
   }
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
-        <p className="text-muted-foreground">
-          Administra los usuarios y sus permisos
-        </p>
-      </div>
+  const { shelterId: selectedShelterId } = await searchParams
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Gestión de Usuarios
-          </CardTitle>
-          <CardDescription>
-            Esta funcionalidad estará disponible próximamente
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Aquí podrás agregar nuevos usuarios, asignar roles y administrar los
-            permisos de acceso al sistema.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+  // Get user's shelters with roles
+  const userShelters = await db
+    .select({
+      id: shelters.id,
+      name: shelters.name,
+      role: userRoles.role,
+    })
+    .from(shelters)
+    .innerJoin(userRoles, eq(shelters.id, userRoles.shelterId))
+    .where(eq(userRoles.userId, session.user.id))
+
+  if (userShelters.length === 0) {
+    redirect('/dashboard/shelters')
+  }
+
+  // Use selected shelter or first available
+  const currentShelterId = selectedShelterId && userShelters.some(s => s.id === selectedShelterId)
+    ? selectedShelterId
+    : userShelters[0].id
+
+  const currentShelter = userShelters.find(s => s.id === currentShelterId)
+  const isAdmin = currentShelter?.role === 'admin'
+
+  return (
+    <UsersPageClient
+      shelters={userShelters}
+      currentShelterId={currentShelterId}
+      currentUserId={session.user.id}
+      isAdmin={isAdmin}
+    />
   )
 }
