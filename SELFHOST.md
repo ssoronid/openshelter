@@ -2,6 +2,8 @@
 
 Guía rápida para instalar OpenShelter en tu propio servidor usando Docker.
 
+> 💡 **Para desarrollo local**, usa `npm run dev:up` - es mucho más simple! Ver [README.md](README.md)
+
 ## 🚀 Inicio Rápido
 
 ### Requisitos

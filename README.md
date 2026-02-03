@@ -4,6 +4,43 @@ Sistema open-source para gestión de refugios de animales en Latinoamérica. Dis
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ssoronid/openshelter)
 
+## 🚀 Inicio Rápido (Desarrollo)
+
+**Un solo comando para empezar:**
+
+```bash
+npm run dev:up
+```
+
+Esto automáticamente:
+- ✅ Configura `.env.local` con valores por defecto
+- ✅ Inicia PostgreSQL en Docker
+- ✅ Ejecuta las migraciones
+- ✅ Inicia el servidor de desarrollo
+
+Abre [http://localhost:3000](http://localhost:3000) y listo! 🎉
+
+### Requisitos Previos
+
+- Node.js 20+
+- Docker Desktop (para la base de datos)
+
+## 📋 Otros Comandos Útiles
+
+```bash
+# Solo iniciar la base de datos
+npm run dev:db
+
+# Detener la base de datos
+npm run dev:db:down
+
+# Ver logs de la base de datos
+npm run dev:db:logs
+
+# Resetear todo (útil si algo se rompe)
+npm run dev:reset
+```
+
 ## Características
 
 - 🐾 Gestión completa de animales (CRUD, estados, fotos)
@@ -22,74 +59,44 @@ Sistema open-source para gestión de refugios de animales en Latinoamérica. Dis
 - **Autenticación**: NextAuth.js (Auth.js)
 - **Deployment**: Docker Compose (self-hosting) o Vercel (cloud)
 
-## Requisitos Previos
+## Instalación Manual (si prefieres)
 
-- Node.js 20+
-- npm o yarn
-- PostgreSQL 16+ (para desarrollo local)
-- Docker y Docker Compose (para self-hosting)
-
-## Instalación Local
+Si prefieres configurar todo manualmente:
 
 1. Clona el repositorio:
-
 ```bash
-git clone https://github.com/tu-usuario/openshelter.git
+git clone https://github.com/ssoronid/openshelter.git
 cd openshelter
 ```
 
 2. Instala las dependencias:
-
 ```bash
 npm install
 ```
 
 3. Configura las variables de entorno:
-
 ```bash
-cp .env.example .env.local
+npm run dev:setup  # Genera .env.local automáticamente
+# O crea .env.local manualmente con:
+# DATABASE_URL=postgresql://openshelter:openshelter@localhost:5432/openshelter
+# NEXTAUTH_SECRET=tu-secret-generado
+# NEXTAUTH_URL=http://localhost:3000
 ```
 
-Edita `.env.local` con tus configuraciones:
-
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/openshelter
-NEXTAUTH_SECRET=tu-secret-key-aqui
-NEXTAUTH_URL=http://localhost:3000
+4. Inicia la base de datos:
+```bash
+npm run dev:db
 ```
 
-4. Genera y ejecuta las migraciones:
-
+5. Ejecuta las migraciones:
 ```bash
-npm run db:generate
 npm run db:push
 ```
 
-5. Inicia el servidor de desarrollo:
-
+6. Inicia el servidor:
 ```bash
 npm run dev
 ```
-
-La aplicación estará disponible en [http://localhost:3000](http://localhost:3000)
-
-## Self-Hosting con Docker
-
-Para instalar OpenShelter en tu propio servidor, consulta la [guía de self-hosting](SELFHOST.md).
-
-**Inicio rápido:**
-```bash
-git clone https://github.com/ssoronid/openshelter.git
-cd openshelter
-cp .env.example .env
-# Edita .env con tus configuraciones
-docker-compose up -d
-docker-compose exec app npm run db:push
-```
-
-La aplicación estará disponible en `http://tu-servidor:3000`
-
-Para más detalles, configuración avanzada y troubleshooting, ve a [SELFHOST.md](SELFHOST.md).
 
 ## Deployment en Vercel
 
@@ -128,9 +135,30 @@ npm run db:push
 
 Para más detalles, consulta [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
+## Self-Hosting
+
+Para instalar OpenShelter en tu propio servidor, consulta la [guía de self-hosting](SELFHOST.md).
+
+**Inicio rápido:**
+```bash
+git clone https://github.com/ssoronid/openshelter.git
+cd openshelter
+cp .env.example .env
+# Edita .env con tus configuraciones
+docker-compose up -d
+docker-compose exec app npm run db:push
+```
+
+La aplicación estará disponible en `http://tu-servidor:3000`
+
+Para más detalles, configuración avanzada y troubleshooting, ve a [SELFHOST.md](SELFHOST.md).
+
 ## Scripts Disponibles
 
 - `npm run dev` - Inicia el servidor de desarrollo
+- `npm run dev:up` - Setup completo y desarrollo (recomendado)
+- `npm run dev:db` - Inicia solo la base de datos
+- `npm run dev:db:down` - Detiene la base de datos
 - `npm run build` - Construye la aplicación para producción
 - `npm run start` - Inicia el servidor de producción
 - `npm run lint` - Ejecuta ESLint
@@ -152,9 +180,10 @@ openshelter/
 ├── lib/                   # Utilidades
 │   ├── db/               # Drizzle setup y schemas
 │   ├── auth/             # NextAuth config
-│   └── utils/            # Helpers
-├── docker/               # Dockerfiles y configs
+│   └── storage/          # Utilidades de storage
+├── scripts/               # Scripts de utilidad
 ├── docker-compose.yml    # Self-hosting setup
+├── docker-compose.dev.yml # Desarrollo local
 └── vercel.json           # Config Vercel
 ```
 
@@ -178,6 +207,3 @@ Las contribuciones son bienvenidas. Por favor, lee nuestras guías de contribuci
 - [ ] Fase 3: Salud y voluntariado
 - [ ] Fase 4: Donaciones y financiamiento
 - [ ] Fase 5: Expansión y productividad
-
-Para más detalles, consulta el [roadmap completo](.cursor/plans/openshelter_roadmap_83bc1264.plan.md).
-

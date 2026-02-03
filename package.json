@@ -13,7 +13,13 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx lib/db/seed.ts",
-    "setup:check-env": "node scripts/setup-vercel-env.js"
+    "setup:check-env": "node scripts/setup-vercel-env.js",
+    "dev:setup": "node scripts/setup-dev.js",
+    "dev:db": "docker-compose -f docker-compose.dev.yml up -d",
+    "dev:db:down": "docker-compose -f docker-compose.dev.yml down",
+    "dev:db:logs": "docker-compose -f docker-compose.dev.yml logs -f postgres",
+    "dev:up": "npm run dev:setup && npm run dev:db && sleep 3 && npm run db:push && npm run dev",
+    "dev:reset": "npm run dev:db:down && docker volume rm openshelter_postgres_dev_data 2>/dev/null || true && npm run dev:up"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.4.0",
