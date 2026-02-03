@@ -2,6 +2,8 @@
 
 Sistema open-source para gestión de refugios de animales en Latinoamérica. Diseñado para ser self-hosted o desplegado en Vercel.
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ssoronid/openshelter)
+
 ## Características
 
 - 🐾 Gestión completa de animales (CRUD, estados, fotos)
@@ -110,12 +112,38 @@ docker-compose down -v
 
 ## Deployment en Vercel
 
-1. Conecta tu repositorio a Vercel
-2. Configura las variables de entorno en el dashboard de Vercel:
-   - `DATABASE_URL` (usa Vercel Postgres o una base de datos externa)
-   - `NEXTAUTH_SECRET`
-   - `NEXTAUTH_URL` (tu dominio de Vercel)
-3. Vercel detectará automáticamente Next.js y desplegará la aplicación
+### Opción 1: Deploy con un clic
+
+Haz clic en el botón de arriba o ve a [vercel.com/new](https://vercel.com/new) y:
+
+1. Conecta tu cuenta de GitHub
+2. Selecciona el repositorio `ssoronid/openshelter`
+3. Vercel detectará automáticamente Next.js
+4. Configura las variables de entorno (ver abajo)
+5. Haz clic en **Deploy**
+
+### Opción 2: Desde el Dashboard
+
+1. Ve a [vercel.com/dashboard](https://vercel.com/dashboard)
+2. Haz clic en **Add New Project**
+3. Selecciona el repositorio `openshelter`
+4. Configura las variables de entorno
+5. Haz clic en **Deploy**
+
+### Variables de Entorno Requeridas
+
+Configura estas variables en **Settings > Environment Variables**:
+
+- `DATABASE_URL` - Connection string de Neon PostgreSQL (recomendado) o Vercel Postgres
+- `NEXTAUTH_SECRET` - Genera con: `openssl rand -base64 32`
+- `NEXTAUTH_URL` - URL de tu deployment (ej: `https://tu-proyecto.vercel.app`)
+- `BLOB_READ_WRITE_TOKEN` - Se configura automáticamente al crear Blob Store en Vercel
+
+**Nota:** Después del primer deploy, ejecuta las migraciones:
+```bash
+vercel env pull .env.local
+npm run db:push
+```
 
 Para más detalles, consulta [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
