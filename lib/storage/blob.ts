@@ -15,11 +15,11 @@
 import { put, head, del, list } from '@vercel/blob'
 
 if (!process.env.BLOB_READ_WRITE_TOKEN) {
-  console.warn(
-    '⚠️  BLOB_READ_WRITE_TOKEN no está configurado. ' +
-    'Vercel Blob Storage no estará disponible. ' +
-    'Crea un Blob Store en el dashboard de Vercel para habilitarlo.'
-  )
+    console.warn(
+        '⚠️  BLOB_READ_WRITE_TOKEN no está configurado. ' +
+        'Vercel Blob Storage no estará disponible. ' +
+        'Crea un Blob Store en el dashboard de Vercel para habilitarlo.'
+    )
 }
 
 /**
@@ -37,40 +37,38 @@ if (!process.env.BLOB_READ_WRITE_TOKEN) {
  * const file = formData.get('file') as File
  * 
  * const url = await uploadFile(file, `animals/${animalId}/${Date.now()}.jpg`, {
- *   contentType: file.type,
- *   access: 'public'
+ *   contentType: file.type
  * })
  * ```
  */
 export async function uploadFile(
-  file: File | Blob | Buffer,
-  pathname: string,
-  options?: {
-    contentType?: string
-    access?: 'public' | 'private'
-    addRandomSuffix?: boolean
-  }
+    file: File | Blob | Buffer,
+    pathname: string,
+    options?: {
+        contentType?: string
+        addRandomSuffix?: boolean
+    }
 ): Promise<string> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error(
-      'BLOB_READ_WRITE_TOKEN no está configurado. ' +
-      'Crea un Blob Store en el dashboard de Vercel.'
-    )
-  }
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        throw new Error(
+            'BLOB_READ_WRITE_TOKEN no está configurado. ' +
+            'Crea un Blob Store en el dashboard de Vercel.'
+        )
+    }
 
-  try {
-    const blob = await put(pathname, file, {
-      access: options?.access || 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-      contentType: options?.contentType,
-      addRandomSuffix: options?.addRandomSuffix ?? false,
-    })
+    try {
+        const blob = await put(pathname, file, {
+            access: 'public',
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+            contentType: options?.contentType,
+            addRandomSuffix: options?.addRandomSuffix ?? false,
+        })
 
-    return blob.url
-  } catch (error) {
-    console.error('Error subiendo archivo a Vercel Blob:', error)
-    throw new Error('Error al subir archivo')
-  }
+        return blob.url
+    } catch (error) {
+        console.error('Error subiendo archivo a Vercel Blob:', error)
+        throw new Error('Error al subir archivo')
+    }
 }
 
 /**
@@ -85,7 +83,7 @@ export async function uploadFile(
  * ```
  */
 export function getFileUrl(url: string): string {
-  return url
+    return url
 }
 
 /**
@@ -100,18 +98,18 @@ export function getFileUrl(url: string): string {
  * ```
  */
 export async function fileExists(url: string): Promise<boolean> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return false
-  }
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        return false
+    }
 
-  try {
-    await head(url, {
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    })
-    return true
-  } catch (error) {
-    return false
-  }
+    try {
+        await head(url, {
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+        })
+        return true
+    } catch (error) {
+        return false
+    }
 }
 
 /**
@@ -126,22 +124,22 @@ export async function fileExists(url: string): Promise<boolean> {
  * ```
  */
 export async function deleteFile(url: string): Promise<boolean> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error(
-      'BLOB_READ_WRITE_TOKEN no está configurado. ' +
-      'Crea un Blob Store en el dashboard de Vercel.'
-    )
-  }
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        throw new Error(
+            'BLOB_READ_WRITE_TOKEN no está configurado. ' +
+            'Crea un Blob Store en el dashboard de Vercel.'
+        )
+    }
 
-  try {
-    await del(url, {
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    })
-    return true
-  } catch (error) {
-    console.error('Error eliminando archivo de Vercel Blob:', error)
-    return false
-  }
+    try {
+        await del(url, {
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+        })
+        return true
+    } catch (error) {
+        console.error('Error eliminando archivo de Vercel Blob:', error)
+        return false
+    }
 }
 
 /**
@@ -157,32 +155,32 @@ export async function deleteFile(url: string): Promise<boolean> {
  * ```
  */
 export async function listFiles(
-  prefix?: string,
-  options?: {
-    limit?: number
-    cursor?: string
-  }
+    prefix?: string,
+    options?: {
+        limit?: number
+        cursor?: string
+    }
 ) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error(
-      'BLOB_READ_WRITE_TOKEN no está configurado. ' +
-      'Crea un Blob Store en el dashboard de Vercel.'
-    )
-  }
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        throw new Error(
+            'BLOB_READ_WRITE_TOKEN no está configurado. ' +
+            'Crea un Blob Store en el dashboard de Vercel.'
+        )
+    }
 
-  try {
-    const result = await list({
-      prefix,
-      limit: options?.limit || 1000,
-      cursor: options?.cursor,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    })
+    try {
+        const result = await list({
+            prefix,
+            limit: options?.limit || 1000,
+            cursor: options?.cursor,
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+        })
 
-    return result
-  } catch (error) {
-    console.error('Error listando archivos de Vercel Blob:', error)
-    throw new Error('Error al listar archivos')
-  }
+        return result
+    } catch (error) {
+        console.error('Error listando archivos de Vercel Blob:', error)
+        throw new Error('Error al listar archivos')
+    }
 }
 
 /**
@@ -198,22 +196,23 @@ export async function listFiles(
  * ```
  */
 export function validateImageFile(
-  file: File,
-  maxSizeMB: number = 5
+    file: File,
+    maxSizeMB: number = 5
 ): void {
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-  const maxSizeBytes = maxSizeMB * 1024 * 1024
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    const maxSizeBytes = maxSizeMB * 1024 * 1024
 
-  if (!allowedTypes.includes(file.type)) {
-    throw new Error(
-      `Tipo de archivo no permitido. Solo se permiten: ${allowedTypes.join(', ')}`
-    )
-  }
+    if (!allowedTypes.includes(file.type)) {
+        throw new Error(
+            `Tipo de archivo no permitido. Solo se permiten: ${allowedTypes.join(', ')}`
+        )
+    }
 
-  if (file.size > maxSizeBytes) {
-    throw new Error(
-      `El archivo es demasiado grande. Tamaño máximo: ${maxSizeMB}MB`
-    )
-  }
+    if (file.size > maxSizeBytes) {
+        throw new Error(
+            `El archivo es demasiado grande. Tamaño máximo: ${maxSizeMB}MB`
+        )
+    }
 }
+
 
