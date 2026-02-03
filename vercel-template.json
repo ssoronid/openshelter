@@ -1,23 +1,19 @@
 {
-    "$schema": "https://openapi.vercel.sh/vercel.json",
-    "framework": "nextjs",
-    "integrations": [
-        {
-            "id": "oac_VqOgBHqhEoFTPzGkPd7L0iH6",
-            "name": "Neon",
-            "products": [
-                {
-                    "id": "neon-postgres",
-                    "config": {}
-                }
-            ]
-        }
-    ],
-    "envVars": {
-        "AUTH_SECRET": {
-            "description": "Secret for NextAuth.js authentication",
-            "required": true,
-            "generator": "secret"
-        }
+  "products": [
+    {
+      "type": "integration",
+      "protocol": "storage",
+      "productSlug": "neon",
+      "integrationSlug": "neon"
+    },
+    {
+      "type": "integration",
+      "protocol": "storage",
+      "productSlug": "upstash-kv",
+      "integrationSlug": "upstash"
+    },
+    {
+      "type": "blob"
     }
+  ]
 }
