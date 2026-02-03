@@ -53,7 +53,7 @@ npm run dev:reset
 
 ## Stack Tecnológico
 
-- **Frontend + Backend**: Next.js 14+ (App Router)
+- **Frontend + Backend**: Next.js 16+ (App Router)
 - **ORM**: Drizzle ORM
 - **Base de datos**: PostgreSQL
 - **Autenticación**: NextAuth.js (Auth.js)
