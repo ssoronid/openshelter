@@ -5,36 +5,37 @@ export default auth((req) => {
   const { pathname } = req.nextUrl
   const isLoggedIn = !!req.auth
 
-  // Public routes
-  const publicRoutes = ['/signin', '/auth/signin', '/auth/signup', '/api/auth']
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
+  // Allow all public routes
+  const publicRoutes = ['/', '/signin', '/api/auth', '/animals']
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname === route || pathname.startsWith(`${route}/`)
+  )
 
-  // API routes - allow public access to certain endpoints
+  // API routes
   if (pathname.startsWith('/api')) {
-    const publicApiRoutes = ['/api/auth', '/api/animals/public']
-    const isPublicApi = publicApiRoutes.some((route) =>
-      pathname.startsWith(route)
-    )
-
+    const publicApiRoutes = ['/api/auth', '/api/adoptions']
+    const isPublicApi = publicApiRoutes.some(route => pathname.startsWith(route))
+    
     if (isPublicApi) {
       return NextResponse.next()
     }
-
-    // Protect API routes
+    
     if (!isLoggedIn) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
+    
     return NextResponse.next()
   }
 
-  // Protect dashboard routes
+  // Dashboard routes require auth
   if (pathname.startsWith('/dashboard') && !isLoggedIn) {
-    return NextResponse.redirect(new URL('/signin', req.url))
+    const signinUrl = new URL('/signin', req.url)
+    signinUrl.searchParams.set('callbackUrl', pathname)
+    return NextResponse.redirect(signinUrl)
   }
 
-  // Redirect logged-in users away from auth pages
-  if (isPublicRoute && isLoggedIn) {
+  // Redirect logged-in users from signin to dashboard
+  if (pathname === '/signin' && isLoggedIn) {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
@@ -42,6 +43,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
 }
-

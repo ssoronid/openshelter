@@ -8,7 +8,7 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
-  output: 'standalone', // Required for Docker
+  // output: 'standalone', // Only needed for Docker, not for Vercel
 }
 
 module.exports = nextConfig
