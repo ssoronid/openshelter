@@ -109,10 +109,31 @@ export async function GET(request: NextRequest) {
     })
 
     if (!tokenResponse.ok) {
-      const errorData = await tokenResponse.text()
-      console.error('Token exchange failed:', errorData)
+      let errorData: any
+      try {
+        errorData = await tokenResponse.json()
+      } catch {
+        errorData = await tokenResponse.text()
+      }
+      
+      console.error('Token exchange failed:', {
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText,
+        error: errorData,
+        appId: appId,
+        redirectUri: redirectUri,
+        hasClientSecret: !!clientSecret,
+        clientSecretLength: clientSecret?.length,
+        codeLength: code?.length,
+      })
+      
+      // Include error details in URL for debugging (be careful not to expose secrets)
+      const errorMessage = typeof errorData === 'string' 
+        ? errorData.substring(0, 100) 
+        : errorData?.message || errorData?.error || 'unknown_error'
+      
       return NextResponse.redirect(
-        `${baseUrl}/dashboard/shelters/${shelterId}/settings?error=token_exchange_failed`
+        `${baseUrl}/dashboard/shelters/${shelterId}/settings?error=token_exchange_failed&details=${encodeURIComponent(errorMessage)}`
       )
     }
 

@@ -17,12 +17,12 @@ import MercadoPagoConnection from '@/components/shelters/MercadoPagoConnection'
 
 interface Props {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ success?: string; error?: string }>
+  searchParams: Promise<{ success?: string; error?: string; details?: string }>
 }
 
 export default async function ShelterSettingsPage({ params, searchParams }: Props) {
   const { id } = await params
-  const { success, error } = await searchParams
+  const { success, error, details } = await searchParams
   const session = await auth()
 
   if (!session) {
@@ -95,12 +95,29 @@ export default async function ShelterSettingsPage({ params, searchParams }: Prop
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-          {error === 'oauth_denied' && 'Se canceló la conexión con MercadoPago.'}
-          {error === 'token_exchange_failed' && 'Error al conectar con MercadoPago. Intenta nuevamente.'}
-          {error === 'config_error' && 'Error de configuración del sistema.'}
-          {!['oauth_denied', 'token_exchange_failed', 'config_error'].includes(error) && 
-            'Ocurrió un error. Intenta nuevamente.'}
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg space-y-2">
+          <div className="font-semibold">
+            {error === 'oauth_denied' && 'Se canceló la conexión con MercadoPago.'}
+            {error === 'token_exchange_failed' && 'Error al conectar con MercadoPago.'}
+            {error === 'config_error' && 'Error de configuración del sistema.'}
+            {!['oauth_denied', 'token_exchange_failed', 'config_error'].includes(error) && 
+              'Ocurrió un error.'}
+          </div>
+          {error === 'token_exchange_failed' && (
+            <div className="text-sm space-y-1">
+              <p>Posibles causas:</p>
+              <ul className="list-disc list-inside ml-2 space-y-1">
+                <li>El redirect URI no está registrado en MercadoPago</li>
+                <li>El Client Secret es incorrecto</li>
+                <li>Las credenciales son de prueba (deben ser productivas)</li>
+              </ul>
+              {details && (
+                <p className="mt-2 text-xs font-mono bg-red-100 p-2 rounded">
+                  {decodeURIComponent(details)}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
