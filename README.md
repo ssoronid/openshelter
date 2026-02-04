@@ -202,8 +202,8 @@ Las contribuciones son bienvenidas. Por favor, lee nuestras guías de contribuci
 ## Roadmap
 
 - [x] Fase 0: Setup inicial
-- [ ] Fase 1: MVP - Gestión básica
-- [ ] Fase 2: Adopciones y comunicación
-- [ ] Fase 3: Salud y voluntariado
-- [ ] Fase 4: Donaciones y financiamiento
+- [x] Fase 1: MVP - Gestión básica
+- [x] Fase 2: Adopciones y comunicación
+- [ ] Fase 3: Salud y voluntariado *(schemas definidos)*
+- [ ] Fase 4: Donaciones y financiamiento *(schemas definidos)*
 - [ ] Fase 5: Expansión y productividad

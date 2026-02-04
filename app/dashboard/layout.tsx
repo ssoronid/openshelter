@@ -10,7 +10,12 @@ import {
   LogOut,
   PawPrint,
   ChevronUp,
+  Banknote,
+  Receipt,
+  TrendingUp,
+  UserCheck,
 } from 'lucide-react'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 import {
   Sidebar,
   SidebarContent,
@@ -41,6 +46,10 @@ const navItems = [
   { title: 'Animales', href: '/dashboard/animals', icon: Dog },
   { title: 'Refugios', href: '/dashboard/shelters', icon: Home },
   { title: 'Adopciones', href: '/dashboard/adoptions', icon: Heart },
+  { title: 'Donaciones', href: '/dashboard/donations', icon: Banknote },
+  { title: 'Apadrinamientos', href: '/dashboard/sponsorships', icon: UserCheck },
+  { title: 'Gastos', href: '/dashboard/expenses', icon: Receipt },
+  { title: 'Finanzas', href: '/dashboard/finances', icon: TrendingUp },
   { title: 'Usuarios', href: '/dashboard/users', icon: Users },
 ]
 
@@ -177,6 +186,7 @@ export default async function DashboardLayout({
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex-1" />
+          <NotificationBell />
         </header>
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </SidebarInset>

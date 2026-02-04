@@ -8,6 +8,13 @@
       "when": 1770150536480,
       "tag": "0000_ancient_lizard",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770209181027,
+      "tag": "0001_add_shelter_mercadopago_credentials",
+      "breakpoints": true
     }
   ]
 }

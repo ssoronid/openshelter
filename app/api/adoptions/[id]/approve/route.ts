@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { adoptionApplications, animals, userRoles } from '@/lib/db/schema'
+import { adoptionApplications, animals, userRoles, shelters, notifications } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { z } from 'zod'
+import { sendEmail, generateApplicationApprovedEmail, generateApplicationRejectedEmail } from '@/lib/email'
 
 const reviewSchema = z.object({
   status: z.enum(['approved', 'rejected']),
@@ -94,6 +95,54 @@ export async function PATCH(
           updatedAt: new Date(),
         })
         .where(eq(animals.id, animal.id))
+    }
+
+    // Get shelter info for email
+    const [shelter] = await db
+      .select()
+      .from(shelters)
+      .where(eq(shelters.id, animal.shelterId))
+      .limit(1)
+
+    // Create notification for the reviewing user
+    await db.insert(notifications).values({
+      userId: session.user.id,
+      shelterId: animal.shelterId,
+      type: validated.status === 'approved' ? 'application_approved' : 'application_rejected',
+      title: validated.status === 'approved' ? 'Adopción aprobada' : 'Solicitud rechazada',
+      message: `La solicitud de ${application.applicantName} para ${animal.name} fue ${validated.status === 'approved' ? 'aprobada' : 'rechazada'}`,
+      link: '/dashboard/adoptions',
+    })
+
+    // Send email to applicant
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+    
+    if (validated.status === 'approved') {
+      await sendEmail({
+        to: application.applicantEmail,
+        subject: `¡Tu solicitud de adopción fue aprobada! - ${animal.name}`,
+        html: generateApplicationApprovedEmail({
+          applicantName: application.applicantName,
+          animalName: animal.name,
+          animalSpecies: animal.species,
+          shelterName: shelter?.name || 'El refugio',
+          shelterEmail: shelter?.email || undefined,
+          shelterPhone: shelter?.phone || undefined,
+          notes: validated.notes,
+        }),
+      })
+    } else {
+      await sendEmail({
+        to: application.applicantEmail,
+        subject: `Actualización sobre tu solicitud de adopción - ${animal.name}`,
+        html: generateApplicationRejectedEmail({
+          applicantName: application.applicantName,
+          animalName: animal.name,
+          shelterName: shelter?.name || 'El refugio',
+          notes: validated.notes,
+          websiteUrl: `${baseUrl}/animals`,
+        }),
+      })
     }
 
     return NextResponse.json({ data: updatedApplication })

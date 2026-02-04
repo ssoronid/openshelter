@@ -1,10 +1,10 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
-import { animals, userRoles, adoptionApplications, shelters } from '@/lib/db/schema'
-import { eq, and, inArray, sql, desc } from 'drizzle-orm'
+import { animals, userRoles, adoptionApplications, shelters, donations, expenses } from '@/lib/db/schema'
+import { eq, and, inArray, sql, desc, gte } from 'drizzle-orm'
 import Link from 'next/link'
-import { PlusCircle, List, Dog, CheckCircle, Home, Clock, HeartHandshake, Activity } from 'lucide-react'
+import { PlusCircle, List, Dog, CheckCircle, Home, Clock, HeartHandshake, Activity, Banknote, Receipt, TrendingUp } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -32,6 +32,9 @@ export default async function DashboardPage() {
   let pendingApplications = 0
   let recentAnimals: any[] = []
   let recentApplications: any[] = []
+  let monthlyDonations = 0
+  let monthlyExpenses = 0
+  let monthlyBalance = 0
 
   try {
     const userShelters = await db
@@ -124,9 +127,52 @@ export default async function DashboardPage() {
         .where(inArray(animals.shelterId, shelterIds))
         .orderBy(desc(adoptionApplications.createdAt))
         .limit(5)
+
+      // Financial stats for this month
+      const firstOfMonth = new Date()
+      firstOfMonth.setDate(1)
+      firstOfMonth.setHours(0, 0, 0, 0)
+      const monthStart = firstOfMonth.toISOString().split('T')[0]
+
+      const [donationsResult] = await db
+        .select({
+          sum: sql<string>`COALESCE(SUM(amount), 0)`,
+        })
+        .from(donations)
+        .where(
+          and(
+            inArray(donations.shelterId, shelterIds),
+            eq(donations.status, 'completed'),
+            gte(donations.date, monthStart)
+          )
+        )
+      monthlyDonations = parseFloat(donationsResult?.sum || '0')
+
+      const [expensesResult] = await db
+        .select({
+          sum: sql<string>`COALESCE(SUM(amount), 0)`,
+        })
+        .from(expenses)
+        .where(
+          and(
+            inArray(expenses.shelterId, shelterIds),
+            gte(expenses.date, monthStart)
+          )
+        )
+      monthlyExpenses = parseFloat(expensesResult?.sum || '0')
+      monthlyBalance = monthlyDonations - monthlyExpenses
     }
   } catch (error) {
     console.error('Error fetching dashboard stats:', error)
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
   }
 
   const stats = [
@@ -175,6 +221,33 @@ export default async function DashboardPage() {
       icon: Home,
       description: 'Refugios asociados',
       href: '/dashboard/shelters',
+    },
+  ]
+
+  const financeStats = [
+    {
+      title: 'Donaciones del Mes',
+      value: formatCurrency(monthlyDonations),
+      icon: Banknote,
+      description: 'Ingresos este mes',
+      valueClass: 'text-green-600',
+      href: '/dashboard/donations',
+    },
+    {
+      title: 'Gastos del Mes',
+      value: formatCurrency(monthlyExpenses),
+      icon: Receipt,
+      description: 'Egresos este mes',
+      valueClass: 'text-red-600',
+      href: '/dashboard/expenses',
+    },
+    {
+      title: 'Balance del Mes',
+      value: formatCurrency(monthlyBalance),
+      icon: TrendingUp,
+      description: monthlyBalance >= 0 ? 'Superávit' : 'Déficit',
+      valueClass: monthlyBalance >= 0 ? 'text-green-600' : 'text-red-600',
+      href: '/dashboard/finances',
     },
   ]
 
@@ -230,6 +303,29 @@ export default async function DashboardPage() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      {/* Finance Stats */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Finanzas del Mes</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          {financeStats.map((stat) => (
+            <Link key={stat.title} href={stat.href}>
+              <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                  <stat.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold ${stat.valueClass || ''}`}>
+                    {stat.value}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{stat.description}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Quick Actions */}

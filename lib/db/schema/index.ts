@@ -6,4 +6,5 @@ export * from './adoptions'
 export * from './health'
 export * from './volunteers'
 export * from './donations'
+export * from './notifications'
 

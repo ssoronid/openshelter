@@ -54,3 +54,4 @@ export const treatments = pgTable('treatments', {
 })
 
 
+

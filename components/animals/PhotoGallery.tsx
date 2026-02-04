@@ -134,3 +134,4 @@ export default function PhotoGallery({ photos, animalName }: Props) {
   )
 }
 
+

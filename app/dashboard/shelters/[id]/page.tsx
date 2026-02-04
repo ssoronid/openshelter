@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { shelters, userRoles, animals } from '@/lib/db/schema'
 import { eq, and, sql } from 'drizzle-orm'
 import Link from 'next/link'
-import { Building2, MapPin, Phone, Mail, Globe, Edit, Users, Dog, ArrowLeft } from 'lucide-react'
+import { Building2, MapPin, Phone, Mail, Globe, Edit, Users, Dog, ArrowLeft, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -94,12 +94,20 @@ export default async function ShelterDetailPage({ params }: Props) {
           )}
         </div>
         {userRole.role === 'admin' && (
-          <Button asChild>
-            <Link href={`/dashboard/shelters/${id}/edit`}>
-              <Edit className="mr-2 h-4 w-4" />
-              Editar
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link href={`/dashboard/shelters/${id}/settings`}>
+                <Settings className="mr-2 h-4 w-4" />
+                Configuración
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/dashboard/shelters/${id}/edit`}>
+                <Edit className="mr-2 h-4 w-4" />
+                Editar
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
 

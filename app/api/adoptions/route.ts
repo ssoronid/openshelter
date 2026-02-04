@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { adoptionApplications, animals } from '@/lib/db/schema'
+import { adoptionApplications, animals, shelters, userRoles, notifications } from '@/lib/db/schema'
 import { eq, desc } from 'drizzle-orm'
 import { z } from 'zod'
+import { sendEmail, generateNewApplicationEmail } from '@/lib/email'
 
 const createApplicationSchema = z.object({
   animalId: z.string().min(1, 'El animal es requerido'),
@@ -93,6 +94,52 @@ export async function POST(request: NextRequest) {
       .insert(adoptionApplications)
       .values(validated)
       .returning()
+
+    // Get shelter info for notification
+    const [shelter] = await db
+      .select()
+      .from(shelters)
+      .where(eq(shelters.id, animal.shelterId))
+      .limit(1)
+
+    // Get all users associated with this shelter for notifications
+    const shelterUsers = await db
+      .select({ userId: userRoles.userId })
+      .from(userRoles)
+      .where(eq(userRoles.shelterId, animal.shelterId))
+
+    // Create in-app notifications for shelter staff
+    if (shelterUsers.length > 0) {
+      const notificationValues = shelterUsers.map((user) => ({
+        userId: user.userId,
+        shelterId: animal.shelterId,
+        type: 'new_application' as const,
+        title: 'Nueva solicitud de adopción',
+        message: `${validated.applicantName} quiere adoptar a ${animal.name}`,
+        link: '/dashboard/adoptions',
+      }))
+
+      await db.insert(notifications).values(notificationValues)
+    }
+
+    // Send email to shelter if email is configured
+    if (shelter?.email) {
+      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+      await sendEmail({
+        to: shelter.email,
+        subject: `Nueva solicitud de adopción para ${animal.name}`,
+        html: generateNewApplicationEmail({
+          applicantName: validated.applicantName,
+          applicantEmail: validated.applicantEmail,
+          applicantPhone: validated.applicantPhone,
+          animalName: animal.name,
+          animalSpecies: animal.species,
+          reason: validated.reason,
+          shelterName: shelter.name,
+          dashboardUrl: `${baseUrl}/dashboard/adoptions`,
+        }),
+      })
+    }
 
     return NextResponse.json({ data: newApplication }, { status: 201 })
   } catch (error) {
