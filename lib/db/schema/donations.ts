@@ -5,6 +5,7 @@ import { animals } from './animals'
 
 export const paymentMethodEnum = pgEnum('payment_method', [
   'mercadopago',
+  'pagopar',
   'pix',
   'paypal',
   'bank_transfer',
