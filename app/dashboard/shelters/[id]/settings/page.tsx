@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { db } from '@/lib/db'
-import { shelters, userRoles, shelterMercadopagoCredentials } from '@/lib/db/schema'
+import { shelters, userRoles, shelterMercadopagoCredentials, shelterPagoparCredentials } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import Link from 'next/link'
 import { ArrowLeft, Settings } from 'lucide-react'
@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import MercadoPagoConnection from '@/components/shelters/MercadoPagoConnection'
+import PagoparConnection from '@/components/shelters/PagoparConnection'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -67,6 +68,17 @@ export default async function ShelterSettingsPage({ params, searchParams }: Prop
     })
     .from(shelterMercadopagoCredentials)
     .where(eq(shelterMercadopagoCredentials.shelterId, id))
+    .limit(1)
+
+  // Get Pagopar credentials if they exist
+  const [pagoparCredentials] = await db
+    .select({
+      commerceName: shelterPagoparCredentials.commerceName,
+      isActive: shelterPagoparCredentials.isActive,
+      updatedAt: shelterPagoparCredentials.updatedAt,
+    })
+    .from(shelterPagoparCredentials)
+    .where(eq(shelterPagoparCredentials.shelterId, id))
     .limit(1)
 
   return (
@@ -133,7 +145,7 @@ export default async function ShelterSettingsPage({ params, searchParams }: Prop
             Integración con MercadoPago
           </CardTitle>
           <CardDescription>
-            Conecta tu cuenta de MercadoPago para recibir donaciones directamente
+            Conecta tu cuenta de MercadoPago para recibir donaciones en Argentina, Paraguay, Brasil y más
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -143,6 +155,31 @@ export default async function ShelterSettingsPage({ params, searchParams }: Prop
             mpEmail={mpCredentials?.mpEmail || null}
             mpNickname={mpCredentials?.mpNickname || null}
             lastUpdated={mpCredentials?.updatedAt?.toISOString() || null}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Pagopar Integration (Paraguay) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <svg className="h-6 w-6" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" rx="8" fill="#1a237e"/>
+              <path d="M12 24h24M24 12v24" stroke="#fff" strokeWidth="4" strokeLinecap="round"/>
+              <circle cx="24" cy="24" r="8" fill="#4caf50"/>
+            </svg>
+            Integración con Pagopar
+          </CardTitle>
+          <CardDescription>
+            Conecta tu cuenta de Pagopar para recibir donaciones en Paraguay (Bancard, Tigo Money, Billetera Personal, etc.)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PagoparConnection
+            shelterId={id}
+            isConnected={!!pagoparCredentials?.isActive}
+            commerceName={pagoparCredentials?.commerceName || null}
+            lastUpdated={pagoparCredentials?.updatedAt?.toISOString() || null}
           />
         </CardContent>
       </Card>

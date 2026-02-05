@@ -38,4 +38,22 @@ export const shelterMercadopagoCredentials = pgTable('shelter_mercadopago_creden
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+// Pagopar credentials per shelter (Paraguay)
+export const shelterPagoparCredentials = pgTable('shelter_pagopar_credentials', {
+  id: text('id')
+    .primaryKey()
+    .$defaultFn(() => createId()),
+  shelterId: text('shelter_id')
+    .notNull()
+    .unique()
+    .references(() => shelters.id, { onDelete: 'cascade' }),
+  publicKey: text('public_key').notNull(),
+  privateKey: text('private_key').notNull(),
+  commerceName: text('commerce_name'), // Name shown in Pagopar
+  webhookUrl: text('webhook_url'), // URL de respuesta configured in Pagopar
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
 

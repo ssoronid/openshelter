@@ -15,6 +15,13 @@
       "when": 1770209181027,
       "tag": "0001_add_shelter_mercadopago_credentials",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770297574033,
+      "tag": "0002_add_shelter_pagopar_credentials",
+      "breakpoints": true
     }
   ]
 }
