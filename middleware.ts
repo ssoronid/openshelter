@@ -13,7 +13,7 @@ export default auth((req) => {
 
   // API routes
   if (pathname.startsWith('/api')) {
-    const publicApiRoutes = ['/api/auth', '/api/adoptions', '/api/setup', '/api/public']
+    const publicApiRoutes = ['/api/auth', '/api/adoptions', '/api/setup', '/api/public', '/api/payments/mercadopago/webhook']
     const isPublicApi = publicApiRoutes.some(route => pathname.startsWith(route))
     
     if (isPublicApi) {
