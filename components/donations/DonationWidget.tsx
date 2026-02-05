@@ -231,3 +231,4 @@ export default function DonationWidget({ shelterId, shelterName, animals = [] }:
 }
 
 
+

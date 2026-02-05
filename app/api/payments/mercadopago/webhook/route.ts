@@ -69,8 +69,10 @@ export async function POST(request: NextRequest) {
     const result = await getPaymentWithFallback(paymentId.toString(), initialShelterId)
 
     if (!result) {
-      console.error('Could not fetch payment details from any source')
-      return NextResponse.json({ error: 'Payment not found' }, { status: 404 })
+      // Payment not found - could be a test webhook or invalid payment
+      // Return 200 to acknowledge receipt (MercadoPago requires this for verification)
+      console.warn('Could not fetch payment details - possibly a test webhook:', paymentId)
+      return NextResponse.json({ received: true, warning: 'Payment not found' })
     }
 
     const { payment } = result
