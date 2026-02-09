@@ -7,8 +7,14 @@ import * as dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 dotenv.config()
 
-import { db } from './index'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
 import { users, shelters, animals, userRoles } from './schema'
+
+const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL
+if (!connectionString) throw new Error('DATABASE_URL is not set')
+const client = postgres(connectionString, { prepare: false })
+const db = drizzle(client)
 import { createId } from '@paralleldrive/cuid2'
 import bcrypt from 'bcryptjs'
 
@@ -111,11 +117,13 @@ async function seed() {
 }
 
 seed()
-  .then(() => {
+  .then(async () => {
+    await client.end()
     process.exit(0)
   })
-  .catch((error) => {
+  .catch(async (error) => {
     console.error(error)
+    await client.end()
     process.exit(1)
   })
 
