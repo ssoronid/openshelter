@@ -10,6 +10,10 @@ node_modules
 /.next/
 /out/
 
+# Premium (AI features – only in private fork)
+/premium
+/openshelter-mcp
+
 # Production
 /build
 
